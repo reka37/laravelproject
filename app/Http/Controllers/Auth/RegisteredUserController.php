@@ -34,21 +34,67 @@ class RegisteredUserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+           'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        //    'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required']
         ]);
 
+        $remember_token =  Hash::make(rand(11111111, 99999999));
+          
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'remember_token' => $remember_token,
             'password' => Hash::make($request->password),
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
+  
+        return response()->json([
+            'success' => true,
+            'remember_token' => $remember_token,
+            'name' => $request->name,
+        ]);
+        
+    }
+    
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'string', 'email', 'max:255'],
+        //    'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required']
+        ]);
 
-        return redirect(RouteServiceProvider::HOME);
+        $user = User::whereEmail($request->email)->first();
+        
+        if($user && Hash::check($request->password, $user->password)) {
+            $remember_token =  Hash::make(rand(11111111, 99999999));
+          
+            $user->remember_token = $remember_token;
+            $user->save();
+
+            Auth::login($user);
+
+            return response()->json([
+                'success' => true,
+                'remember_token' => $remember_token,
+                'name' => $user->name,
+            ]);
+        } else {
+               return response()->json([
+                'success' => false
+            ]);
+        }
+    }
+
+    public function logout() {
+        Auth::logout();
+        return response()->json([
+                    'success' => true
+        ]);
     }
 }

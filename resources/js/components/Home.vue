@@ -80,9 +80,7 @@
                                 <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                             </svg>
 
-                            <a href="https://github.com/sponsors/taylorotwell" class="ml-1 underline">
-                                Sponsor
-                            </a>
+                          Вы вошли как {{name}}
                         </div>
                     </div>
 
@@ -99,6 +97,13 @@
    
 
     export default {
+        data(){
+            return {
+                 name: localStorage.getItem('name')
+            }
+        }
+
+
 
     }
 </script>
